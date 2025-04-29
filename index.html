@@ -5,13 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>FRH PRO  - v900</title>
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
+  <!-- Votre CSS principal -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- (1) Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <!-- (2) Leaflet Draw + GeometryUtil CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"
+  />
   <!-- Flatpickr CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="style.css">
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"
+  />
 </head>
 
 <body>
@@ -20,7 +35,12 @@
     <div class="header">
       <h1 class="page-title">Etude centrale solaire FRH PRO</h1>
       <div id="topButtons">
-        <input type="file" id="mapCaptureFile" accept="image/png, image/jpeg" style="display:none;" />
+        <input
+          type="file"
+          id="mapCaptureFile"
+          accept="image/png, image/jpeg"
+          style="display: none;"
+        />
         <label for="mapCaptureFile">Sélectionner la capture</label>
         <button type="button" id="exportPDFBtn">Générer Rapport PDF</button>
         <button type="button" id="saveToFile">Télécharger les données</button>
@@ -31,28 +51,442 @@
 
     <!-- Barre d'onglets fixe -->
     <div class="tabNav" id="topTabNav">
-      <!-- ... onglets 1 à 12 ... -->
+      <button class="tablinks" onclick="openTab(event,'tab1')">1. Localisation</button>
+      <button class="tablinks" onclick="openTab(event,'tab2')">2. Potentiel</button>
+      <button class="tablinks" onclick="openTab(event,'tab3')">3. Production mensuelle</button>
+      <button class="tablinks" onclick="openTab(event,'tab4')">4. Société</button>
+      <button class="tablinks" onclick="openTab(event,'tab5')">5. Toiture</button>
+      <button class="tablinks" onclick="openTab(event,'tab6')">6. Périodes</button>
+      <button class="tablinks" onclick="openTab(event,'tab7')">7. Conso mensuelle</button>
+      <button class="tablinks" onclick="openTab(event,'tab8')">8. Préconisation</button>
+      <button class="tablinks" onclick="openTab(event,'tab9')">9. Préconisation Sélection</button>
+      <button class="tablinks" onclick="openTab(event,'tab10')">10. Commentaires</button>
+      <button class="tablinks" onclick="openTab(event,'tab11')">11. Paramètres</button>
+      <button class="tablinks" onclick="openTab(event,'tab12')">12. Trésorerie</button>
     </div>
 
-    <!-- Formulaire global -->
     <form id="userForm">
-      <!-- ... contenu des onglets 1 à 12 sans <style> ni <script> ... -->
+      <!-- ======= Onglet 1 ======= -->
+      <div id="tab1" class="tabContent">
+        <div class="tabLogo">
+          <h2>Localisation & Irradiation</h2>
+        </div>
+        <label for="address">Adresse :</label>
+        <input type="text" id="address" required />
+        <button type="button" id="addressSearchBtn">Rechercher</button>
+        <button type="button" id="toggleDrawingButton">Activer le dessin</button>
+        <button type="button" id="toggleMeasureButton">Mesurer une surface</button>
+        <div id="map-container">
+          <div id="map"></div>
+          <canvas id="drawingCanvas"></canvas>
+        </div>
+        <div class="form-section">
+          <h3>Données irradiation</h3>
+          <label for="latitudeIrr">Latitude :</label>
+          <input type="text" id="latitudeIrr" readonly />
+          <label for="longitudeIrr">Longitude :</label>
+          <input type="text" id="longitudeIrr" readonly />
+          <label for="orientationIrr">Orientation :</label>
+          <select id="orientationIrr">
+            <option value="0">SUD (0°)</option>
+            <option value="-90">EST (-90°)</option>
+            <option value="90">OUEST (90°)</option>
+            <option value="-45">SUD-EST (-45°)</option>
+            <option value="45">SUD-OUEST (45°)</option>
+          </select>
+          <label for="orientation">Angle (°) :</label>
+          <input type="text" id="orientation" readonly />
+          <label for="angleIrr">Inclinaison (°) :</label>
+          <input type="number" id="angleIrr" value="35" />
+          <label for="productible">Productible kWh/kWc/an :</label>
+          <input type="text" id="productible" readonly />
+          <label for="territory">Territoire :</label>
+          <input type="text" id="territory" disabled />
+          <button type="button" id="calculateIrrButton">Calculer</button>
+        </div>
+      </div>
+
+      <!-- ======= Onglet 2 ======= -->
+      <div id="tab2" class="tabContent">
+        <div class="tabLogo">
+          <h2>Potentiel de Production</h2>
+        </div>
+        <div class="form-section">
+          <label for="exclusionPercent">% exclusion :</label>
+          <input type="number" id="exclusionPercent" value="0" />
+          <label for="puissancePanneau">Panneau (Wc) :</label>
+          <select id="puissancePanneau">
+            <option value="375">375</option>
+            <option value="420" selected>420</option>
+            <option value="440">440</option>
+            <option value="500">500</option>
+          </select>
+          <label for="nombrePVMax">Nb modules max :</label>
+          <input type="text" id="nombrePVMax" readonly />
+          <label for="puissanceMaxPV">Puissance max (kWc) :</label>
+          <input type="text" id="puissanceMaxPV" readonly />
+          <label for="productionInstall">Prod install (kWh) :</label>
+          <input type="text" id="productionInstall" readonly />
+        </div>
+      </div>
+
+      <!-- ======= Onglet 3 ======= -->
+      <div id="tab3" class="tabContent">
+        <div class="tabLogo">
+          <h2>Production mensuelle</h2>
+        </div>
+        <div class="form-section">
+          <table id="monthlyProductionTable">
+            <thead>
+              <tr><th>Mois</th><th>Production (kWh)</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ======= Onglet 4 ======= -->
+      <div id="tab4" class="tabContent">
+        <div class="tabLogo"><h2>Infos Société</h2></div>
+        <div class="form-section">
+          <label for="companyName">Société :</label>
+          <input type="text" id="companyName" />
+          <label for="activity">Activité :</label>
+          <input type="text" id="activity" />
+          <label for="Nom">Nom :</label>
+          <input type="text" id="Nom" />
+          <label for="Prénom">Prénom :</label>
+          <input type="text" id="Prénom" />
+          <label for="Statut">Statut :</label>
+          <input type="text" id="Statut" />
+          <label for="Propietaire/Locataire">Propriétaire/Locataire :</label>
+          <select id="Propietaire/Locataire">
+            <option disabled selected>Choisir</option>
+            <option>Propriétaire</option>
+            <option>Locataire</option>
+          </select>
+          <label for="Annees presence">Années de présence :</label>
+          <input type="number" id="Annees presence" />
+        </div>
+      </div>
+
+      <!-- ======= Onglet 5 ======= -->
+      <div id="tab5" class="tabContent">
+        <div class="tabLogo"><h2>Infos Toiture</h2></div>
+        <div class="form-section">
+          <label for="Surface toiture">Surface (m²) :</label>
+          <input type="number" id="Surface toiture" />
+          <label for="Partage sa toiture">Partagée ?</label>
+          <select id="Partage sa toiture">
+            <option disabled selected>Choisir</option>
+            <option>Oui</option><option>Non</option>
+          </select>
+          <label for="Type de toiture">Type :</label>
+          <select id="Type de toiture">
+            <option disabled selected>Choisir</option>
+            <option>2 pentes</option><option>1 pente</option><option>Toit plat</option>
+          </select>
+          <label for="Pente toiture">Pente (°) :</label>
+          <input type="number" id="Pente toiture" />
+          <label for="Type de couverture">Couverture :</label>
+          <select id="Type de couverture">
+            <option disabled selected>Choisir</option>
+            <option>Bacs acier</option><option>Fibro ciment</option>
+            <option>Tuiles</option><option>Béton</option>
+          </select>
+          <label for="Type de charpente">Charpente :</label>
+          <select id="Type de charpente">
+            <option disabled selected>Choisir</option>
+            <option>Métallique</option><option>Bois</option>
+          </select>
+          <label for="Translucides">Translucides ?</label>
+          <select id="Translucides">
+            <option disabled selected>Choisir</option>
+            <option>Oui</option><option>Non</option>
+          </select>
+          <label for="Couvrir Translucides">Couvrir ?</label>
+          <select id="Couvrir Translucides">
+            <option disabled selected>Choisir</option>
+            <option>Oui</option><option>Non</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ======= Onglet 6 ======= -->
+      <div id="tab6" class="tabContent">
+        <div class="tabLogo"><h2>Périodes d’utilisation</h2></div>
+        <div class="form-section">
+          <h4>Mois de congés</h4>
+          <div class="checkbox-grid">
+            <label><input type="checkbox" name="moisConges[]" value="Janvier" />Janvier</label>
+            <!-- ... jusqu'à Décembre ... -->
+          </div>
+          <h4>Jours de congés</h4>
+          <div class="checkbox-grid">
+            <label><input type="checkbox" name="joursConges[]" value="Lundi" />Lundi</label>
+            <!-- ... jusqu'à Dimanche ... -->
+          </div>
+          <label for="heureDebut">Heure début :</label>
+          <input type="time" id="heureDebut" />
+          <label for="heureFin">Heure fin :</label>
+          <input type="time" id="heureFin" />
+          <label for="Puissance compteur">Puissance compteur (kVA) :</label>
+          <input type="number" id="Puissance compteur" />
+        </div>
+      </div>
+
+      <!-- ======= Onglet 7 ======= -->
+      <div id="tab7" class="tabContent">
+        <div class="tabLogo"><h2>Conso mensuelle</h2></div>
+        <div class="form-section" id="consumptionTableContainer">
+          <table id="consumptionTable">
+            <thead>
+              <tr>
+                <th>Mois</th>
+                <th>Conso (€)</th>
+                <th>Conso (kWh)</th>
+                <th>Coût kWh (€)</th>
+              </tr>
+            </thead>
+            <tbody id="consumptionTableBody">
+              <tr>
+                <td><strong>Total annuel</strong></td>
+                <td id="totalEuros">-</td>
+                <td id="totalKwh">-</td>
+                <td id="totalCostPerKwh">-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ======= Onglet 8 ======= -->
+      <div id="tab8" class="tabContent">
+        <div class="tabLogo"><h2>Préconisation</h2></div>
+        <div class="form-section">
+          <div id="preconisationSummary">
+            <p>Puissance préconisée : <span id="puissanceReco">-</span> kWc</p>
+            <p>Coût install. : <span id="coutInstallation">-</span> €</p>
+            <p>Prime : <span id="primeValue">-</span> €</p>
+            <p>Remise : <input type="number" id="remise" value="0" style="width:100px" /> €</p>
+            <p>Coût réel : <span id="coutReelInstallation">-</span> €</p>
+            <p>Gain brut : <span id="gainSansInv">-</span> €</p>
+            <p>Gain net : <span id="gainAvecInv">-</span> €</p>
+            <p>ROI (ans) : <span id="roiResult">-</span></p>
+            <p>Modules : <span id="nombreModules">-</span></p>
+            <p>Surface (m²) : <span id="surfaceInstallation">-</span></p>
+          </div>
+          <label for="annualPriceIncrease">Augmentation annuelle (%) :</label>
+          <input type="number" step="0.1" id="annualPriceIncrease" value="5" />
+          <label for="tarifRachat">Tarif rachat (€/kWh) :</label>
+          <input type="number" step="0.0001" id="tarifRachat" value="0.0761" disabled />
+          <label for="ratioDiurne">Ratio diurne (%) :</label>
+          <input type="number" id="ratioDiurne" value="60" min="0" max="100" />
+          <label><input type="checkbox" id="showKwhColumns" /> Afficher kWh</label>
+          <button type="button" id="calculatePreconisation">Calculer</button>
+
+          <h4>Détails par mois (année 1)</h4>
+          <table id="preconisationMonthlyTable"></table>
+
+          <h4>Graphique mensuel</h4>
+          <canvas id="monthlyBarChart" width="600" height="300"></canvas>
+
+          <h4>Projection sur 20 ans</h4>
+          <table id="preconisationTable">
+            <thead>
+              <tr>
+                <th>Année</th>
+                <th>Facture Sans Centrale</th>
+                <th>Économies Autoconso</th>
+                <th>Facture Avec Centrale</th>
+                <th>Gains Revente</th>
+                <th>Prime (année 2)</th>
+                <th>Total Économies</th>
+                <th>Cumul économies</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr>
+                <th>Totaux 20 ans</th>
+                <td id="totalSansPv">-</td>
+                <td id="totalAuto">-</td>
+                <td id="totalAvecPv">-</td>
+                <td id="totalRevente">-</td>
+                <td id="totalPrime">-</td>
+                <td id="totalEconomies">-</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- ======= Onglet 9 ======= -->
+      <div id="tab9" class="tabContent">
+        <div class="tabLogo"><h2>Préconisation Sélection</h2></div>
+        <div class="form-section">
+          <div id="preconisationSummaryForced">
+            <p>
+              Taux d’autoproduction :
+              <input type="number" id="tauxAutoproduction" value="60" style="width:60px" /> %
+            </p>
+            <p>
+              Puissance pour auto-prod choisie :
+              <span id="puissanceAutoprodChoisie">-</span> kWc
+            </p>
+            <p>Puissance préconisée (Sélection) : <span id="puissanceRecoForced">-</span> kWc</p>
+            <p>Coût install. : <span id="coutInstallationForced">-</span> €</p>
+            <p>Prime : <span id="primeValueForced">-</span> €</p>
+            <p>Remise : <input type="number" id="remiseForced" value="0" style="width:100px" /> €</p>
+            <p>Coût réel : <span id="coutReelInstallationForced">-</span> €</p>
+            <p>Gain brut : <span id="gainSansInvForced">-</span> €</p>
+            <p>Gain net : <span id="gainAvecInvForced">-</span> €</p>
+            <p>ROI (ans) : <span id="roiResultForced">-</span></p>
+            <p>Modules : <span id="nombreModulesForced">-</span></p>
+            <p>Surface (m²) : <span id="surfaceInstallationForced">-</span></p>
+          </div>
+          <label for="forcedPower">Installation choisie (kWc) :</label>
+          <input type="number" id="forcedPower" value="10" min="1" />
+          <button type="button" id="applyForcedPreconisationBtn">Appliquer</button>
+          <button type="button" id="batchReportBtn">Rapport multi-puissances</button>
+
+          <h4>Détails par mois (année 1) – Sélection</h4>
+          <table id="preconisationMonthlyTableForced"></table>
+
+          <h4>Graphique mensuel – Sélection</h4>
+          <canvas id="monthlyBarChartForced" width="600" height="300"></canvas>
+
+          <h4>Projection sur 20 ans – Sélection</h4>
+          <table id="preconisationTableForced">
+            <thead>
+              <tr>
+                <th>Année</th>
+                <th>Facture Sans Centrale</th>
+                <th>Économies Autoconso</th>
+                <th>Facture Avec Centrale</th>
+                <th>Gains Revente</th>
+                <th>Prime (année 2)</th>
+                <th>Total Économies</th>
+                <th>Cumul économies</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr>
+                <th>Totaux 20 ans</th>
+                <td id="totalSansPvForced">-</td>
+                <td id="totalAutoForced">-</td>
+                <td id="totalAvecPvForced">-</td>
+                <td id="totalReventeForced">-</td>
+                <td id="totalPrimeForced">-</td>
+                <td id="totalEconomiesForced">-</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- ======= Onglet 10 ======= -->
+      <div id="tab10" class="tabContent">
+        <div class="tabLogo"><h2>Commentaires</h2></div>
+        <div class="form-section">
+          <label for="rdvDate">Date RDV :</label>
+          <input type="text" id="rdvDate" placeholder="jj/mm/aaaa" />
+          <label for="rdvTime">Heure RDV :</label>
+          <input type="time" id="rdvTime" />
+          <label for="comments">Commentaires :</label>
+          <textarea id="comments" placeholder="Vos commentaires"></textarea>
+        </div>
+      </div>
+
+      <!-- ======= Onglet 11 ======= -->
+      <div id="tab11" class="tabContent">
+        <div class="tabLogo"><h2>Paramètres</h2></div>
+        <div class="form-section">
+          <h3>Charges photovoltaïques</h3>
+          <label for="assurance_dommages">Assurance dommages % :</label>
+          <input type="text" id="assurance_dommages" value="0.20" />
+          <label for="assurance_perte">Assurance perte % :</label>
+          <input type="text" id="assurance_perte" value="0.30" />
+          <label for="cout_maintenance">Maintenance (€/kWc) :</label>
+          <input type="text" id="cout_maintenance" value="5.97" />
+        </div>
+        <div class="form-section">
+          <h3>Vieux. centrale</h3>
+          <label for="perte_puissance">Perte annuelle % :</label>
+          <input type="text" id="perte_puissance" value="0.60" />
+        </div>
+        <div class="form-section">
+          <h3>Financier</h3>
+          <label for="inflation_estimee">Inflation %/an :</label>
+          <input type="text" id="inflation_estimee" value="2.00" />
+          <label for="taux_emprunt">Taux emprunt % :</label>
+          <input type="text" id="taux_emprunt" value="2.00" />
+          <label for="duree_pret">Durée prêt (ans) :</label>
+          <input type="number" id="duree_pret" />
+          <label for="taux_autofinancement">Autofinancement % :</label>
+          <input type="text" id="taux_autofinancement" />
+          <label for="index_leasing">Index leasing :</label>
+          <input type="text" id="index_leasing" value="1.837" />
+          <label for="duree_leasing">Durée leasing (mois) :</label>
+          <input type="number" id="duree_leasing" value="72" />
+        </div>
+      </div>
+
+      <!-- ======= Onglet 12 ======= -->
+      <div id="tab12" class="tabContent">
+        <div class="tabLogo"><h2>Plan de trésorerie</h2></div>
+        <div class="form-section">
+          <label for="financementMode">Mode financement :</label>
+          <select id="financementMode">
+            <option value="banque">Banque</option>
+            <option value="leasing">Leasing</option>
+          </select>
+          <label for="leasingCompany">Leaser :</label>
+          <select id="leasingCompany">
+            <option disabled selected>Choisir</option>
+            <option>Leasecom</option>
+            <option>Grenke</option>
+          </select>
+          <label for="leaseDuration">Durée (mois) :</label>
+          <input type="number" id="leaseDuration" value="72" />
+          <label for="scenarioPlan">Scénario :</label>
+          <select id="scenarioPlan">
+            <option value="standard">Standard</option>
+            <option value="selection">Sélection</option>
+          </select>
+          <button type="button" id="calculateTresorerieBtn">Calculer</button>
+        </div>
+        <div class="form-section">
+          <table id="planTresorerieTable">
+            <thead id="planTresorerieHeader">
+              <tr>
+                <th>Année</th>
+                <th>Recettes</th>
+                <th>Remboursement/Loyer</th>
+                <th>Solde net</th>
+              </tr>
+            </thead>
+            <tbody id="planTresorerieBody"></tbody>
+          </table>
+        </div>
+      </div>
     </form>
   </div>
 
-  <!-- Scripts externes -->
+  <!-- Vendor scripts -->
   <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
   <script src="https://unpkg.com/leaflet-geometryutil@0.9.3/dist/leaflet.geometryutil.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
 
-  <!-- Custom JS -->
+  <!-- Votre JavaScript principal -->
   <script src="script.js"></script>
 </body>
 </html>
